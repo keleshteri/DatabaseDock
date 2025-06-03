@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DatabaseDock"
         mc:Ignorable="d"
-        Title="Database Settings" Height="450" Width="600"
+        Title="Database Settings" Height="500" Width="650"
+        MinHeight="450" MinWidth="600"
         WindowStartupLocation="CenterOwner">
-    <Grid Margin="15">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -15,16 +16,16 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <TextBlock Grid.Row="0" Text="Database Configuration" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+        <TextBlock Grid.Row="0" Text="Database Configuration" FontSize="22" FontWeight="Bold" Margin="0,0,0,15"/>
 
         <!-- Settings Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <!-- Database Type & Version -->
-                <GroupBox Header="Database Information" Padding="10" Margin="0,0,0,10">
+                <GroupBox Header="Database Information" Padding="15" Margin="0,0,0,15">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="130"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -32,19 +33,19 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Database Type:" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="DatabaseTypeTextBox" IsReadOnly="True" Margin="0,5"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Database Type:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="DatabaseTypeTextBox" IsReadOnly="True" Margin="0,5" Padding="5,3"/>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Version:" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="VersionTextBox" Margin="0,5"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Version:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="VersionTextBox" Margin="0,5" Padding="5,3"/>
                     </Grid>
                 </GroupBox>
 
                 <!-- Connection Settings -->
-                <GroupBox Header="Connection Settings" Padding="10" Margin="0,0,0,10">
+                <GroupBox Header="Connection Settings" Padding="15" Margin="0,0,0,15">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="130"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -53,41 +54,44 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Port:" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="PortTextBox" Margin="0,5"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Port:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="PortTextBox" Margin="0,5" Padding="5,3"/>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Username:" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="UsernameTextBox" Margin="0,5"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Username:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="UsernameTextBox" Margin="0,5" Padding="5,3"/>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Password:" VerticalAlignment="Center"/>
-                        <PasswordBox Grid.Row="2" Grid.Column="1" x:Name="PasswordBox" Margin="0,5"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Password:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <PasswordBox Grid.Row="2" Grid.Column="1" x:Name="PasswordBox" Margin="0,5" Padding="5,3"/>
                     </Grid>
                 </GroupBox>
 
                 <!-- Volume Settings -->
-                <GroupBox Header="Volume Settings" Padding="10" Margin="0,0,0,10">
+                <GroupBox Header="Volume Settings" Padding="15" Margin="0,0,0,15">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="130"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="0" Text="Volume Path:" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1" x:Name="VolumePathTextBox" Margin="0,5"/>
-                        <Button Grid.Column="2" Content="Browse..." Margin="5,5,0,5" Padding="10,0" Click="BrowseVolumePath_Click"/>
+                        <TextBlock Grid.Column="0" Text="Volume Path:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBox Grid.Column="1" x:Name="VolumePathTextBox" Margin="0,5" Padding="5,3"
+                                 ToolTip="{Binding Text, ElementName=VolumePathTextBox}"/>
+                        <Button Grid.Column="2" Content="Browse..." Height="28" Width="85" Margin="10,5,0,5" Click="BrowseVolumePath_Click"/>
                     </Grid>
                 </GroupBox>
 
                 <!-- Advanced Settings -->
-                <GroupBox Header="Advanced Settings" Padding="10">
+                <GroupBox Header="Advanced Settings" Padding="15">
                     <StackPanel>
                         <CheckBox x:Name="StartWithWindowsCheckBox" Content="Start with Windows" Margin="0,5"/>
-                        <CheckBox x:Name="AutoStartCheckBox" Content="Auto-start this database when application launches" Margin="0,5"/>
+                        <CheckBox x:Name="AutoStartCheckBox" Content="Auto-start this database when application launches" Margin="0,8"/>
                         
-                        <TextBlock Text="Environment Variables:" Margin="0,10,0,5"/>
-                        <TextBox x:Name="EnvironmentVariablesTextBox" AcceptsReturn="True" Height="80" 
-                                 VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
+                        <TextBlock Text="Environment Variables:" FontWeight="SemiBold" Margin="0,15,0,5"/>
+                        <TextBlock Text="Enter one variable per line in format: KEY=VALUE" FontStyle="Italic" Foreground="#666" Margin="0,0,0,5"/>
+                        <TextBox x:Name="EnvironmentVariablesTextBox" AcceptsReturn="True" Height="100" 
+                                 VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" Padding="5,3"
+                                 FontFamily="Consolas"/>
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
@@ -95,8 +99,8 @@
 
         <!-- Buttons -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-            <Button Content="Cancel" Width="80" Margin="0,0,10,0" Click="CancelButton_Click"/>
-            <Button Content="Save" Width="80" Click="SaveButton_Click"/>
+            <Button Content="Cancel" Width="85" Height="30" Margin="0,0,10,0" Click="CancelButton_Click"/>
+            <Button Content="Save" Width="85" Height="30" Click="SaveButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>

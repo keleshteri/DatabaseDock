@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DatabaseDock"
         mc:Ignorable="d"
-        Title="Logs" Height="600" Width="900"
+        Title="Logs" Height="650" Width="1000"
+        MinHeight="500" MinWidth="800"
         WindowStartupLocation="CenterOwner">
-    <Grid>
+    <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -15,17 +16,24 @@
         </Grid.RowDefinitions>
 
         <!-- Header with tabs -->
-        <TabControl x:Name="LogTabs" Grid.Row="0" Background="#F0F0F0" SelectionChanged="LogTabs_SelectionChanged">
-            <TabItem Header="Application Logs" Name="AppLogsTab"/>
-            <TabItem Header="All Docker Logs" Name="AllDockerLogsTab"/>
+        <TabControl x:Name="LogTabs" Grid.Row="0" Background="#F0F0F0" SelectionChanged="LogTabs_SelectionChanged" Padding="3">
+            <TabItem Header="Application Logs" Name="AppLogsTab" Padding="10,5"/>
+            <TabItem Header="All Docker Logs" Name="AllDockerLogsTab" Padding="10,5"/>
         </TabControl>
 
         <!-- Log Content -->
-        <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" Margin="10">
-            <ListView x:Name="LogItemsListView" ItemsSource="{Binding CurrentLogs}" Background="White" FontFamily="Consolas">
+        <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" Margin="10" Background="#FAFAFA">
+            <ListView x:Name="LogItemsListView" ItemsSource="{Binding CurrentLogs}" Background="White" FontFamily="Consolas" 
+                      VirtualizingPanel.IsVirtualizing="True" 
+                      VirtualizingPanel.VirtualizationMode="Recycling" 
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Path=., StringFormat='{}{0}'}" TextWrapping="NoWrap" Foreground="{Binding Type, Converter={StaticResource LogTypeToColorConverter}}"/>
+                        <TextBlock Text="{Binding Path=., StringFormat='{}{0}'}" 
+                                   TextWrapping="NoWrap" 
+                                   Foreground="{Binding Type, Converter={StaticResource LogTypeToColorConverter}}"
+                                   FontSize="12"
+                                   Margin="0,1"/>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
@@ -38,11 +46,11 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <TextBlock x:Name="StatusTextBlock" Grid.Column="0" Text="Ready" VerticalAlignment="Center"/>
+            <TextBlock x:Name="StatusTextBlock" Grid.Column="0" Text="Ready" VerticalAlignment="Center" Margin="5,0"/>
             
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="Clear Logs" Width="80" Margin="0,0,5,0" Click="ClearLogs_Click"/>
-                <Button Content="Copy to Clipboard" Width="120" Margin="5,0,0,0" Click="CopyLogs_Click"/>
+                <Button Content="Clear Logs" Width="85" Height="30" Margin="0,0,8,0" Click="ClearLogs_Click"/>
+                <Button Content="Copy to Clipboard" Width="125" Height="30" Click="CopyLogs_Click"/>
             </StackPanel>
         </Grid>
     </Grid>

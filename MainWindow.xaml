@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:DatabaseDock"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="DatabaseDock" Height="550" Width="900"
+        Title="DatabaseDock" Height="650" Width="1000"
+        MinHeight="500" MinWidth="800"
         WindowStartupLocation="CenterScreen"
         Icon="/Resources/database_icon.ico"
         Closing="Window_Closing">
@@ -35,15 +36,18 @@
 
         <!-- Main Content -->
         <Grid Grid.Row="2" Margin="10">
-            <ListView x:Name="DatabaseListView" ItemsSource="{Binding Databases}" Margin="0,10,0,0">
+            <ListView x:Name="DatabaseListView" ItemsSource="{Binding Databases}" Margin="0,10,0,0"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      HorizontalContentAlignment="Stretch">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="#F5F5F5" CornerRadius="5" Padding="10" Margin="0,5" Width="850">
+                        <Border Background="#F5F5F5" CornerRadius="5" Padding="10" Margin="0,5" 
+                                HorizontalAlignment="Stretch">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="50"/>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="Auto" MinWidth="40"/>
+                                    <ColumnDefinition Width="Auto" MinWidth="130"/>
+                                    <ColumnDefinition Width="Auto" MinWidth="100"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
@@ -52,7 +56,7 @@
                                 <Image Grid.Column="0" Source="{Binding IconPath}" Width="32" Height="32" HorizontalAlignment="Center"/>
 
                                 <!-- Database Name -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0">
                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"/>
                                     <TextBlock Text="{Binding Version}" FontSize="12" Foreground="#666"/>
                                 </StackPanel>
@@ -63,32 +67,53 @@
                                 </Border>
 
                                 <!-- Connection Info -->
-                                <StackPanel Grid.Column="3" Margin="10,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding ConnectionString}" TextTrimming="CharacterEllipsis"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <Grid Grid.Column="3" Margin="10,0,0,0" VerticalAlignment="Center">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <!-- Connection String -->
+                                    <TextBlock Grid.Row="0" Text="{Binding ConnectionString}" 
+                                               TextTrimming="CharacterEllipsis" 
+                                               TextWrapping="NoWrap"
+                                               ToolTip="{Binding ConnectionString}"/>
+                                    
+                                    <!-- Port and Volume Path -->
+                                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0">
                                         <TextBlock Text="Port: " FontWeight="SemiBold"/>
                                         <TextBlock Text="{Binding Port}"/>
                                         <TextBlock Text=" | " Margin="5,0"/>
                                         <TextBlock Text="Volume: " FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding VolumePath}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding VolumePath}" 
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding VolumePath}"/>
                                     </StackPanel>
-                                </StackPanel>
-
-                                <!-- Connection Status (visible only when running) -->
-                                <StackPanel Grid.Column="3" Margin="10,5,0,0" Visibility="{Binding Status, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Running}">
-                                    <StackPanel Orientation="Horizontal">
+                                    
+                                    <!-- Connection Status (visible only when running) -->
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,5,0,0" 
+                                                Visibility="{Binding Status, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Running}">
                                         <TextBlock Text="Connection: " FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding ConnectionMessage}" TextTrimming="CharacterEllipsis" Foreground="{Binding ConnectionSuccess, Converter={StaticResource BoolToColorConverter}}" Visibility="{Binding ConnectionTested, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                        <TextBlock Text="Not Tested" Foreground="Gray" Visibility="{Binding ConnectionTested, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                        <TextBlock Text="{Binding ConnectionMessage}" 
+                                                   TextTrimming="CharacterEllipsis" 
+                                                   Foreground="{Binding ConnectionSuccess, Converter={StaticResource BoolToColorConverter}}" 
+                                                   Visibility="{Binding ConnectionTested, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                   ToolTip="{Binding ConnectionMessage}"/>
+                                        <TextBlock Text="Not Tested" Foreground="Gray" 
+                                                   Visibility="{Binding ConnectionTested, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
 
                                 <!-- Action Buttons -->
-                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="{Binding ActionButtonText}" Width="80" Margin="0,0,5,0" Click="ToggleDatabase_Click" CommandParameter="{Binding}"/>
-                                    <Button Content="Test" Width="80" Margin="5,0,5,0" Click="TestConnection_Click" CommandParameter="{Binding}" 
+                                <StackPanel Grid.Column="4" Orientation="Vertical" VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <Button Content="{Binding ActionButtonText}" Width="85" Height="28" Margin="0,0,0,5" 
+                                            Click="ToggleDatabase_Click" CommandParameter="{Binding}"/>
+                                    <Button Content="Test" Width="85" Height="28" Margin="0,0,0,5" 
+                                            Click="TestConnection_Click" CommandParameter="{Binding}" 
                                             Visibility="{Binding Status, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Running}"/>
-                                    <Button Content="Settings" Width="80" Margin="5,0,0,0" Click="DatabaseSettings_Click" CommandParameter="{Binding}"/>
+                                    <Button Content="Settings" Width="85" Height="28" 
+                                            Click="DatabaseSettings_Click" CommandParameter="{Binding}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -105,12 +130,13 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <TextBlock Grid.Column="0" x:Name="StatusTextBlock" Text="Ready" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" x:Name="StatusTextBlock" Text="Ready" VerticalAlignment="Center" 
+                           TextTrimming="CharacterEllipsis" Margin="5,0"/>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Content="Refresh" Width="80" Margin="0,0,5,0" Click="RefreshStatus_Click"/>
-                    <Button Content="View Logs" Width="80" Margin="5,0,5,0" Click="ViewLogs_Click"/>
-                    <Button Content="Add Database" Width="100" Margin="5,0,0,0" Click="AddDatabase_Click"/>
+                    <Button Content="Refresh" Width="85" Height="30" Margin="0,0,8,0" Click="RefreshStatus_Click"/>
+                    <Button Content="View Logs" Width="85" Height="30" Margin="0,0,8,0" Click="ViewLogs_Click"/>
+                    <Button Content="Add Database" Width="105" Height="30" Click="AddDatabase_Click"/>
                 </StackPanel>
             </Grid>
         </Border>
