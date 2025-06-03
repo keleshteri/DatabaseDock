@@ -17,6 +17,7 @@ namespace DatabaseDock
     {
         private readonly DockerService _dockerService;
         private readonly SettingsService _settingsService;
+        private readonly DatabaseConnectionService _connectionService;
         private ObservableCollection<DatabaseContainer> _databases;
         private bool _isClosing;
         private bool _isMinimizingToTray;
@@ -29,6 +30,7 @@ namespace DatabaseDock
             // Initialize services
             _dockerService = new DockerService();
             _settingsService = new SettingsService();
+            _connectionService = new DatabaseConnectionService(_dockerService.LoggingService);
             _databases = new ObservableCollection<DatabaseContainer>();
 
             // Set data context
@@ -159,6 +161,10 @@ namespace DatabaseDock
 
                         await _dockerService.StopDatabaseContainer(database.ContainerId, database.Name);
                         database.Status = "Stopped";
+                        // Reset connection status when stopped
+                        database.ConnectionTested = false;
+                        database.ConnectionSuccess = false;
+                        database.ConnectionMessage = string.Empty;
                         StatusTextBlock.Text = $"{database.Name} stopped successfully";
                     }
                     else if (database.Status.ToLower() == "stopped")
@@ -176,7 +182,11 @@ namespace DatabaseDock
                         string containerId = await _dockerService.StartDatabaseContainer(database, progress);
                         database.ContainerId = containerId;
                         database.Status = "Running";
+                        database.ConnectionTested = false;
                         StatusTextBlock.Text = $"{database.Name} started successfully";
+                        
+                        // Auto-test connection after database is started
+                        await TestDatabaseConnectionAsync(database);
                     }
 
                     // Save updated database information
@@ -276,6 +286,10 @@ namespace DatabaseDock
                     string containerId = await _dockerService.StartDatabaseContainer(database, progress);
                     database.ContainerId = containerId;
                     database.Status = "Running";
+                    database.ConnectionTested = false;
+                    
+                    // Auto-test connection after database is started
+                    await TestDatabaseConnectionAsync(database);
                 }
 
                 // Save updated database information
@@ -303,6 +317,10 @@ namespace DatabaseDock
                     database.Status = "Stopping";
                     await _dockerService.StopDatabaseContainer(database.ContainerId, database.Name);
                     database.Status = "Stopped";
+                    // Reset connection status when stopped
+                    database.ConnectionTested = false;
+                    database.ConnectionSuccess = false;
+                    database.ConnectionMessage = string.Empty;
                 }
 
                 // Save updated database information
@@ -340,6 +358,69 @@ namespace DatabaseDock
             else
             {
                 _logWindow.Activate();
+            }
+        }
+        
+        private async void TestConnection_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is DatabaseContainer database)
+            {
+                button.IsEnabled = false;
+                await TestDatabaseConnectionAsync(database, button);
+                button.IsEnabled = true;
+            }
+        }
+        
+        private async Task TestDatabaseConnectionAsync(DatabaseContainer database, Button? button = null)
+        {
+            if (database == null) return;
+            
+            try
+            {
+                // Only test connections for running databases
+                if (database.Status.ToLower() != "running")
+                {
+                    if (button != null) // Only show message if triggered by manual button click
+                    {
+                        MessageBox.Show($"Database {database.Name} is not running. Please start it first.", 
+                            "Database Not Running", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    return;
+                }
+                
+                // Update UI
+                StatusTextBlock.Text = $"Testing connection to {database.Name}...";
+                _dockerService.LoggingService.LogInfo($"Testing connection to {database.Name}...", database.Name);
+                
+                // Perform the test
+                var result = await _connectionService.TestConnectionAsync(database);
+                
+                // Update database model with results
+                database.ConnectionTested = true;
+                database.ConnectionSuccess = result.Success;
+                database.ConnectionMessage = result.Success ? 
+                    result.Message.Split('.')[0] : // Just show the first part of successful messages
+                    result.Message;
+                
+                // Update UI
+                StatusTextBlock.Text = result.Message;
+                
+                // Save the updated database info
+                await _settingsService.SaveDatabasesAsync(_databases.ToList());
+            }
+            catch (Exception ex)
+            {
+                database.ConnectionTested = true;
+                database.ConnectionSuccess = false;
+                database.ConnectionMessage = $"Error: {ex.Message}";
+                
+                StatusTextBlock.Text = $"Error testing connection: {ex.Message}";
+                _dockerService.LoggingService.LogError($"Error testing connection: {ex.Message}", database.Name);
+                
+                if (button != null) // Only show message if triggered by manual button click
+                {
+                    MessageBox.Show($"Error testing connection: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }

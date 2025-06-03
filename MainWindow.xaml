@@ -74,9 +74,20 @@
                                     </StackPanel>
                                 </StackPanel>
 
+                                <!-- Connection Status (visible only when running) -->
+                                <StackPanel Grid.Column="3" Margin="10,5,0,0" Visibility="{Binding Status, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Running}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Connection: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding ConnectionMessage}" TextTrimming="CharacterEllipsis" Foreground="{Binding ConnectionSuccess, Converter={StaticResource BoolToColorConverter}}" Visibility="{Binding ConnectionTested, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        <TextBlock Text="Not Tested" Foreground="Gray" Visibility="{Binding ConnectionTested, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                    </StackPanel>
+                                </StackPanel>
+
                                 <!-- Action Buttons -->
                                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Content="{Binding ActionButtonText}" Width="80" Margin="0,0,5,0" Click="ToggleDatabase_Click" CommandParameter="{Binding}"/>
+                                    <Button Content="Test" Width="80" Margin="5,0,5,0" Click="TestConnection_Click" CommandParameter="{Binding}" 
+                                            Visibility="{Binding Status, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Running}"/>
                                     <Button Content="Settings" Width="80" Margin="5,0,0,0" Click="DatabaseSettings_Click" CommandParameter="{Binding}"/>
                                 </StackPanel>
                             </Grid>

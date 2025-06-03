@@ -21,6 +21,9 @@ namespace DatabaseDock.Models
         private string _statusColorHex = "#808080"; // Default gray
         private string _password = string.Empty;
         private string _type = string.Empty;
+        private bool _connectionTested = false;
+        private bool _connectionSuccess = false;
+        private string _connectionMessage = string.Empty;
 
         public string Name
         {
@@ -143,6 +146,24 @@ namespace DatabaseDock.Models
         {
             get => _type;
             set => SetProperty(ref _type, value);
+        }
+
+        public bool ConnectionTested
+        {
+            get => _connectionTested;
+            set => SetProperty(ref _connectionTested, value);
+        }
+
+        public bool ConnectionSuccess
+        {
+            get => _connectionSuccess;
+            set => SetProperty(ref _connectionSuccess, value);
+        }
+
+        public string ConnectionMessage
+        {
+            get => _connectionMessage;
+            set => SetProperty(ref _connectionMessage, value);
         }
 
         // Default values for different database types
