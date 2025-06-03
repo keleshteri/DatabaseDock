@@ -9,6 +9,8 @@ jobs:
   build-and-release:
     name: Build and Release
     runs-on: windows-latest # WPF applications require a Windows environment
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout code
