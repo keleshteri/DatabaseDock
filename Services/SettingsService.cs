@@ -70,6 +70,30 @@ namespace DatabaseDock.Services
 
         public async Task SaveDatabasesAsync(List<DatabaseContainer> databases)
         {
+            // Ensure Type property is set for all databases
+            foreach (var database in databases)
+            {
+                // If Type is null or empty, set it based on database name
+                if (string.IsNullOrEmpty(database.Type))
+                {
+                    switch (database.Name.ToLowerInvariant())
+                    {
+                        case "mysql":
+                            database.Type = "mysql";
+                            break;
+                        case "mssql":
+                            database.Type = "mssql";
+                            break;
+                        case "postgresql":
+                            database.Type = "postgresql";
+                            break;
+                        case "redis":
+                            database.Type = "redis";
+                            break;
+                    }
+                }
+            }
+            
             var settings = new AppSettings
             {
                 Databases = databases,

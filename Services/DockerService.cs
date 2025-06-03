@@ -316,7 +316,11 @@ namespace DatabaseDock.Services
 
         private (string Image, List<string> Env, Dictionary<string, EmptyStruct> ExposedPorts) GetContainerConfig(DatabaseContainer database)
         {
-            return database.Name.ToLower() switch
+            // Use Type property for identifying database type, not Name
+            string dbType = database.Type?.ToLowerInvariant().Trim() ?? string.Empty;
+            _loggingService.LogInfo($"Getting container config for database type: '{dbType}'", database.Name);
+            
+            return dbType switch
             {
                 "mysql" => (
                     $"mysql:{database.Version}",
@@ -338,8 +342,9 @@ namespace DatabaseDock.Services
                     new List<string>(),
                     new Dictionary<string, EmptyStruct> { { $"{database.Port}/tcp", new EmptyStruct() } }
                 ),
-                _ => throw new ArgumentException($"Unsupported database type: {database.Name}")
+                _ => throw new ArgumentException($"Unsupported database type: '{dbType}' for database '{database.Name}'")
             };
+            
         }
 
         private HostConfig GetHostConfig(DatabaseContainer database)
@@ -364,13 +369,17 @@ namespace DatabaseDock.Services
             // Add volume binding if path is specified
             if (!string.IsNullOrEmpty(database.VolumePath))
             {
-                string containerPath = database.Name.ToLower() switch
+                // Use Type property for determining container path, not Name
+                string dbType = database.Type?.ToLowerInvariant().Trim() ?? string.Empty;
+                _loggingService.LogInfo($"Getting host config for database type: '{dbType}'", database.Name);
+                
+                string containerPath = dbType switch
                 {
                     "mysql" => "/var/lib/mysql",
                     "mssql" => "/var/opt/mssql/data",
                     "postgresql" => "/var/lib/postgresql/data",
                     "redis" => "/data",
-                    _ => throw new ArgumentException($"Unsupported database type: {database.Name}")
+                    _ => throw new ArgumentException($"Unsupported database type: '{dbType}' for database '{database.Name}'")
                 };
 
                 hostConfig.Binds = new List<string>

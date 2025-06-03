@@ -31,26 +31,34 @@ namespace DatabaseDock
             // Set connection settings
             PortTextBox.Text = _database.Port.ToString();
             
+            // Ensure database Type is set correctly based on Name if it's empty
+            if (string.IsNullOrEmpty(_database.Type))
+            {
+                _database.Type = _database.Name.ToLowerInvariant();
+            }
+            
             // Extract username and password from connection string if available
-            if (_database.Name.ToLower() == "mysql")
+            string dbType = _database.Type.ToLowerInvariant();
+            
+            if (dbType == "mysql")
             {
                 UsernameTextBox.Text = "root";
-                PasswordBox.Password = "password";
+                PasswordBox.Password = _database.Password ?? "password";
             }
-            else if (_database.Name.ToLower() == "mssql")
+            else if (dbType == "mssql")
             {
                 UsernameTextBox.Text = "sa";
-                PasswordBox.Password = "P@ssw0rd";
+                PasswordBox.Password = _database.Password ?? "P@ssw0rd";
             }
-            else if (_database.Name.ToLower() == "postgresql")
+            else if (dbType == "postgresql")
             {
                 UsernameTextBox.Text = "postgres";
-                PasswordBox.Password = "postgres";
+                PasswordBox.Password = _database.Password ?? "postgres";
             }
-            else if (_database.Name.ToLower() == "redis")
+            else if (dbType == "redis")
             {
                 UsernameTextBox.Text = "";
-                PasswordBox.Password = "";
+                PasswordBox.Password = _database.Password ?? "";
             }
             
             // Set volume path
@@ -104,7 +112,19 @@ namespace DatabaseDock
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
             
-            switch (_database.Name.ToLower())
+            // Always store the password in the database object
+            _database.Password = password;
+            
+            // Make sure Type is set correctly if it's empty
+            if (string.IsNullOrEmpty(_database.Type))
+            {
+                _database.Type = _database.Name.ToLowerInvariant();
+            }
+            
+            // Use Type property for determining connection string format
+            string dbType = _database.Type.ToLowerInvariant();
+            
+            switch (dbType)
             {
                 case "mysql":
                     _database.ConnectionString = $"Server=localhost;Port={_database.Port};Database=mysql;User={username};Password={password};";

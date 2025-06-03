@@ -26,21 +26,29 @@ namespace DatabaseDock.Services
             }
 
             _loggingService.LogInfo($"Testing connection to {database.Name}...", database.Name);
+            _loggingService.LogInfo($"Database type: '{database.Type}', Name: '{database.Name}'", database.Name);
 
             try
             {
-                switch (database.Type.ToLower())
+                // Normalize the database type to lowercase and trim any whitespace
+                string dbType = database.Type?.ToLowerInvariant().Trim() ?? string.Empty;
+                
+                switch (dbType)
                 {
                     case "mysql":
+                        _loggingService.LogInfo("Testing MySQL connection", database.Name);
                         return await TestMySqlConnectionAsync(database);
                     case "mssql":
+                        _loggingService.LogInfo("Testing MSSQL connection", database.Name);
                         return await TestMsSqlConnectionAsync(database);
                     case "postgresql":
+                        _loggingService.LogInfo("Testing PostgreSQL connection", database.Name);
                         return await TestPostgreSqlConnectionAsync(database);
                     case "redis":
+                        _loggingService.LogInfo("Testing Redis connection", database.Name);
                         return await TestRedisConnectionAsync(database);
                     default:
-                        var errorMsg = $"Unsupported database type: {database.Type}";
+                        var errorMsg = $"Unsupported database type: '{database.Type}'"; 
                         _loggingService.LogError(errorMsg, database.Name);
                         return (false, errorMsg);
                 }

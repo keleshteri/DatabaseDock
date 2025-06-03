@@ -27,10 +27,32 @@ namespace DatabaseDock.Models
                 return (Array.Empty<byte>(), true); // EOF
             }
 
-            int bytesToRead = Math.Min(count, BitConverter.ToInt32(header, 4));
-            int bytesRead = await _stream.ReadAsync(buffer, offset, bytesToRead, cancellationToken);
+            // Safely handle the size from the header
+            int frameSize;
+            try {
+                frameSize = BitConverter.ToInt32(header, 4);
+                // Ensure frameSize is positive to prevent exceptions
+                if (frameSize < 0)
+                {
+                    frameSize = 0;
+                }
+            }
+            catch (Exception)
+            {
+                // Handle any conversion errors by using a safe default
+                frameSize = 0;
+            }
 
-            return (buffer, false);
+            int bytesToRead = Math.Min(count, frameSize);
+            
+            // Only read if there are bytes to read
+            if (bytesToRead > 0)
+            {
+                int bytesRead = await _stream.ReadAsync(buffer, offset, bytesToRead, cancellationToken);
+                return (buffer, false);
+            }
+            
+            return (Array.Empty<byte>(), false);
         }
     }
 }

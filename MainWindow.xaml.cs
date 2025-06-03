@@ -58,8 +58,32 @@ namespace DatabaseDock
 
                 foreach (var database in databases)
                 {
+                    // Ensure Type property is correctly set based on database name
+                    if (string.IsNullOrEmpty(database.Type))
+                    {
+                        switch (database.Name.ToLowerInvariant())
+                        {
+                            case "mysql":
+                                database.Type = "mysql";
+                                break;
+                            case "mssql":
+                                database.Type = "mssql";
+                                break;
+                            case "postgresql":
+                                database.Type = "postgresql";
+                                break;
+                            case "redis":
+                                database.Type = "redis";
+                                break;
+                        }
+                        _dockerService.LoggingService.LogInfo($"Setting database type to '{database.Type}' for {database.Name}", database.Name);
+                    }
+
                     _databases.Add(database);
                 }
+
+                // Save databases to ensure Type property is persisted
+                await _settingsService.SaveDatabasesAsync(_databases.ToList());
 
                 StatusTextBlock.Text = "Databases loaded successfully";
             }
