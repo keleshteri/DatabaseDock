@@ -333,33 +333,69 @@ public class DockerService
     {
         // Use Type property for identifying database type, not Name
         string dbType = database.Type?.ToLowerInvariant().Trim() ?? string.Empty;
+         
+
+        // Validate password first
+        if (!string.IsNullOrEmpty(database.Password))
+        {
+            ValidatePassword(database.Password, dbType);
+        }
         _loggingService.LogInfo($"Getting container config for database type: '{dbType}'", database.Name);
-        
+
+        _loggingService.LogInfo($"Database Type: {dbType}, Version: {database.Version}, Password: {database.Password}", database.Name);
+
+
         return dbType switch
         {
             "mysql" => (
                 $"mysql:{database.Version}",
-                new List<string> { $"MYSQL_ROOT_PASSWORD={database.Password}" },
+                new List<string> { $"MYSQL_ROOT_PASSWORD={EscapePassword(database.Password)}" },
                 new Dictionary<string, EmptyStruct> { { $"{database.Port}/tcp", new EmptyStruct() } }
             ),
             "mssql" => (
                 $"mcr.microsoft.com/mssql/server:{database.Version}-latest",
-                new List<string> { "ACCEPT_EULA=Y", $"SA_PASSWORD={database.Password}" },
+                new List<string> {
+                "ACCEPT_EULA=Y",
+                $"MSSQL_SA_PASSWORD={EscapePassword(database.Password)}" // Note: Some versions use MSSQL_SA_PASSWORD
+                },
                 new Dictionary<string, EmptyStruct> { { $"{database.Port}/tcp", new EmptyStruct() } }
             ),
             "postgresql" => (
                 $"postgres:{database.Version}",
-                new List<string> { $"POSTGRES_PASSWORD={database.Password}" },
+                new List<string> { $"POSTGRES_PASSWORD={EscapePassword(database.Password)}" },
                 new Dictionary<string, EmptyStruct> { { $"{database.Port}/tcp", new EmptyStruct() } }
             ),
             "redis" => (
                 $"redis:{database.Version}",
-                new List<string>(),
+                string.IsNullOrEmpty(database.Password)
+                    ? new List<string>()
+                    : new List<string> { $"--requirepass {EscapePassword(database.Password)}" }, // Add password support for Redis
                 new Dictionary<string, EmptyStruct> { { $"{database.Port}/tcp", new EmptyStruct() } }
             ),
             _ => throw new ArgumentException($"Unsupported database type: '{dbType}' for database '{database.Name}'")
         };
-        
+
+    }
+    private void ValidatePassword(string password, string dbType)
+    {
+        if (dbType == "mssql")
+        {
+            if (password.Length < 8)
+            {
+                throw new ArgumentException("MSSQL password must be at least 8 characters long");
+            }
+            // Add more MSSQL password validation rules here
+        }
+    }
+    private string EscapePassword(string password)
+    {
+        // For now, just validate that problematic characters aren't present
+        if (password.Contains("$") || password.Contains("\"") || password.Contains("'"))
+        {
+            throw new ArgumentException("Password contains invalid characters ($, \", '). Please use alphanumeric characters and basic symbols.");
+        }
+
+        return password;
     }
 
     private HostConfig GetHostConfig(DatabaseContainer database)
