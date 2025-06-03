@@ -48,7 +48,7 @@ public class DockerService
         return containers.Select(c => c.ID).ToList();
     }
 
-    public async Task<string> StartDatabaseContainer(DatabaseContainer database, IProgress<string> progress = null)
+    public async Task<string> StartDatabaseContainer(DatabaseContainer database, IProgress<string>? progress = null)
     {
         try
         {
@@ -111,9 +111,12 @@ public class DockerService
             {
                 _loggingService.LogInfo($"Starting existing container {existingContainer.ID.Substring(0, 12)}", database.Name);
                 await _client.Containers.StartContainerAsync(existingContainer.ID, new ContainerStartParameters());
-                
+
                 // Create config log for existing container
-                var existingConfigLog = new ContainerConfigLog
+                ContainerConfigLog? existingConfigLog;
+                if (!string.IsNullOrEmpty(database.VolumePath))
+                {
+                    existingConfigLog = new ContainerConfigLog
                 {
                     DatabaseName = database.Name,
                     DatabaseType = database.Name.ToLower(),
@@ -124,16 +127,33 @@ public class DockerService
                     Port = database.Port,
                     VolumePath = database.VolumePath,
                     ConnectionString = database.ConnectionString,
-                    VolumeContainerPath = !string.IsNullOrEmpty(database.VolumePath) ? database.Name.ToLower() switch
+                    VolumeContainerPath = database.Name.ToLower() switch
                     {
                         "mysql" => "/var/lib/mysql",
                         "mssql" => "/var/opt/mssql/data",
                         "postgresql" => "/var/lib/postgresql/data",
                         "redis" => "/data",
                         _ => "unknown"
-                    } : null
-                };
-                
+                    }
+                    };
+                }
+                else
+                {
+                    existingConfigLog = new ContainerConfigLog
+                {
+                    DatabaseName = database.Name,
+                    DatabaseType = database.Name.ToLower(),
+                    ContainerName = containerName,
+                    ContainerId = existingContainer.ID,
+                    ImageName = imageName,
+                    ImageTag = imageTag,
+                    Port = database.Port,
+                    VolumePath = database.VolumePath,
+                    ConnectionString = database.ConnectionString,
+                    VolumeContainerPath = null
+                    };
+                }
+
                 // Get the container configuration for logging purposes
                 var existingContainerConfig = GetContainerConfig(database);
                 
@@ -270,7 +290,7 @@ public class DockerService
         }
     }
 
-    public async Task<string> GetContainerStatus(string containerId, string databaseName = null)
+    public async Task<string> GetContainerStatus(string containerId, string? databaseName = null)
     {
         try
         {

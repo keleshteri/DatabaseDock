@@ -18,7 +18,7 @@ namespace DatabaseDock.Services
             _loggingService = loggingService;
         }
 
-        public async Task<(bool Success, string Message)> TestConnectionAsync(DatabaseContainer database)
+        public async Task<(bool Success, string Message)> TestConnectionAsync(DatabaseContainer? database)
         {
             if (database == null)
             {
@@ -87,6 +87,7 @@ namespace DatabaseDock.Services
             }
         }
 
+        [Obsolete]
         private async Task<(bool Success, string Message)> TestMsSqlConnectionAsync(DatabaseContainer database)
         {
             try
