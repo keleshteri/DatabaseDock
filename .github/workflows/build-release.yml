@@ -1,0 +1,64 @@
+name: Build and Release DatabaseDock WPF App
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers the workflow on version tags like v1.0, v1.0.1, etc.
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: windows-latest # WPF applications require a Windows environment
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x' # As per project requirements
+
+    - name: Restore dependencies
+      run: dotnet restore DatabaseDock.csproj
+      working-directory: ${{ github.workspace }} # Assuming DatabaseDock.csproj is at the root
+
+    - name: Build application
+      run: dotnet build DatabaseDock.csproj --configuration Release --no-restore
+      working-directory: ${{ github.workspace }}
+
+    - name: Publish application
+      run: >
+        dotnet publish DatabaseDock.csproj 
+        --configuration Release 
+        --runtime win-x64 
+        --self-contained true 
+        /p:PublishSingleFile=true 
+        /p:PublishReadyToRun=true
+        /p:IncludeNativeLibrariesForSelfExtract=true
+        --output ./publish
+      working-directory: ${{ github.workspace }}
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by GitHub Actions
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref_name }}
+        body: |
+          Release of version ${{ github.ref_name }}.
+          See assets below for the application executable.
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset (EXE)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/publish/DatabaseDock.exe # Path to the published EXE
+        asset_name: DatabaseDock-${{ github.ref_name }}.exe # Name of the asset in the release
+        asset_content_type: application/vnd.microsoft.portable-executable
