@@ -1,12 +1,122 @@
-﻿<Window x:Class="DatabaseDock.MainWindow"
+<Window x:Class="DatabaseDock.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DatabaseDock"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="DatabaseDock" Height="550" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Icon="/Resources/database_icon.ico"
+        Closing="Window_Closing">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><!-- For Menu -->
+            <RowDefinition Height="Auto"/><!-- For Header -->
+            <RowDefinition Height="*"/>   <!-- For Main Content -->
+            <RowDefinition Height="Auto"/><!-- For Footer -->
+        </Grid.RowDefinitions>
 
+        <!-- Menu Bar -->
+        <Menu Grid.Row="0" VerticalAlignment="Top" Background="#F0F0F0">
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="AboutMenuItem_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Header -->
+        <Border Grid.Row="1" Background="#2D2D30" Padding="10">
+            <StackPanel>
+                <TextBlock Text="DatabaseDock" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                <TextBlock Text="Docker Database Management" FontSize="14" Foreground="#CCCCCC"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="2" Margin="10">
+            <ListView x:Name="DatabaseListView" ItemsSource="{Binding Databases}" Margin="0,10,0,0">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#F5F5F5" CornerRadius="5" Padding="10" Margin="0,5" Width="850">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Database Icon -->
+                                <Image Grid.Column="0" Source="{Binding IconPath}" Width="32" Height="32" HorizontalAlignment="Center"/>
+
+                                <!-- Database Name -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"/>
+                                    <TextBlock Text="{Binding Version}" FontSize="12" Foreground="#666"/>
+                                </StackPanel>
+
+                                <!-- Status -->
+                                <Border Grid.Column="2" Background="{Binding StatusColor}" CornerRadius="3" Padding="5,2" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding Status}" Foreground="White" FontSize="12"/>
+                                </Border>
+
+                                <!-- Connection Info -->
+                                <StackPanel Grid.Column="3" Margin="10,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ConnectionString}" TextTrimming="CharacterEllipsis"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                        <TextBlock Text="Port: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Port}"/>
+                                        <TextBlock Text=" | " Margin="5,0"/>
+                                        <TextBlock Text="Volume: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding VolumePath}" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Action Buttons -->
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="{Binding ActionButtonText}" Width="80" Margin="0,0,5,0" Click="ToggleDatabase_Click" CommandParameter="{Binding}"/>
+                                    <Button Content="Settings" Width="80" Margin="5,0,0,0" Click="DatabaseSettings_Click" CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+        <!-- Footer -->
+        <Border Grid.Row="3" Background="#F0F0F0" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" x:Name="StatusTextBlock" Text="Ready" VerticalAlignment="Center"/>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="Refresh" Width="80" Margin="0,0,5,0" Click="RefreshStatus_Click"/>
+                    <Button Content="Add Database" Width="100" Margin="5,0,0,0" Click="AddDatabase_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Taskbar Icon -->
+        <tb:TaskbarIcon x:Name="TrayIcon"
+                        IconSource="/Resources/database_icon.ico"
+                        ToolTipText="DatabaseDock"
+                        TrayLeftMouseDown="TrayIcon_TrayLeftMouseDown">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Show Window" Click="ShowWindow_Click"/>
+                    <MenuItem Header="Start All Databases" Click="StartAllDatabases_Click"/>
+                    <MenuItem Header="Stop All Databases" Click="StopAllDatabases_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Exit" Click="ExitApplication_Click"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
     </Grid>
 </Window>

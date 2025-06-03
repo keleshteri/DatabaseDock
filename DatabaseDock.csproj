@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,6 +6,32 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\database_icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\database_icon.ico" />
+    <None Remove="Resources\Icons\mssql_icon.png" />
+    <None Remove="Resources\Icons\mysql_icon.png" />
+    <None Remove="Resources\Icons\postgres_icon.png" />
+    <None Remove="Resources\Icons\redis_icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Docker.DotNet" Version="3.125.15" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\database_icon.ico" />
+    <Resource Include="Resources\Icons\mssql_icon.png" />
+    <Resource Include="Resources\Icons\mysql_icon.png" />
+    <Resource Include="Resources\Icons\postgres_icon.png" />
+    <Resource Include="Resources\Icons\redis_icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
 
 </Project>
