@@ -20,6 +20,7 @@ namespace DatabaseDock
         private ObservableCollection<DatabaseContainer> _databases;
         private bool _isClosing;
         private bool _isMinimizingToTray;
+        private LogWindow _logWindow;
 
         public MainWindow()
         {
@@ -96,6 +97,7 @@ namespace DatabaseDock
             try
             {
                 StatusTextBlock.Text = "Refreshing container statuses...";
+                _dockerService.LoggingService.LogInfo("Refreshing container statuses");
 
                 var runningContainers = await _dockerService.GetRunningContainers();
 
@@ -105,16 +107,20 @@ namespace DatabaseDock
                     if (!string.IsNullOrEmpty(database.ContainerId))
                     {
                         // Get current status from Docker
-                        string status = await _dockerService.GetContainerStatus(database.ContainerId);
+                        string status = await _dockerService.GetContainerStatus(database.ContainerId, database.Name);
 
                         // Update status based on Docker response
                         if (status.ToLower() == "running")
                         {
                             database.Status = "Running";
+                            
+                            // Ensure we're streaming logs for running containers
+                            await _dockerService.LoggingService.StartContainerLogStream(database.ContainerId, database.Name);
                         }
                         else
                         {
                             database.Status = "Stopped";
+                            _dockerService.LoggingService.StopContainerLogStream(database.Name);
                         }
                     }
                     else
@@ -124,10 +130,12 @@ namespace DatabaseDock
                 }
 
                 StatusTextBlock.Text = "Container statuses refreshed";
+                _dockerService.LoggingService.LogInfo("Container statuses refreshed");
             }
             catch (Exception ex)
             {
                 StatusTextBlock.Text = $"Error refreshing container statuses: {ex.Message}";
+                _dockerService.LoggingService.LogError($"Error refreshing container statuses: {ex.Message}");
             }
         }
 
@@ -143,7 +151,13 @@ namespace DatabaseDock
                         database.Status = "Stopping";
                         StatusTextBlock.Text = $"Stopping {database.Name}...";
 
-                        await _dockerService.StopDatabaseContainer(database.ContainerId);
+                        // Create a progress reporter for UI updates
+                        var progress = new Progress<string>(message =>
+                        {
+                            StatusTextBlock.Text = message;
+                        });
+
+                        await _dockerService.StopDatabaseContainer(database.ContainerId, database.Name);
                         database.Status = "Stopped";
                         StatusTextBlock.Text = $"{database.Name} stopped successfully";
                     }
@@ -153,7 +167,13 @@ namespace DatabaseDock
                         database.Status = "Starting";
                         StatusTextBlock.Text = $"Starting {database.Name}...";
 
-                        string containerId = await _dockerService.StartDatabaseContainer(database);
+                        // Create a progress reporter for UI updates
+                        var progress = new Progress<string>(message =>
+                        {
+                            StatusTextBlock.Text = message;
+                        });
+
+                        string containerId = await _dockerService.StartDatabaseContainer(database, progress);
                         database.ContainerId = containerId;
                         database.Status = "Running";
                         StatusTextBlock.Text = $"{database.Name} started successfully";
@@ -166,6 +186,7 @@ namespace DatabaseDock
                 {
                     database.Status = "Error";
                     StatusTextBlock.Text = $"Error: {ex.Message}";
+                    _dockerService.LoggingService.LogError($"Error toggling database: {ex.Message}", database.Name);
                     MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -240,11 +261,19 @@ namespace DatabaseDock
             try
             {
                 StatusTextBlock.Text = "Starting all databases...";
+                _dockerService.LoggingService.LogInfo("Starting all databases");
 
                 foreach (var database in _databases.Where(d => d.Status.ToLower() == "stopped"))
                 {
                     database.Status = "Starting";
-                    string containerId = await _dockerService.StartDatabaseContainer(database);
+                    
+                    // Create a progress reporter for UI updates
+                    var progress = new Progress<string>(message =>
+                    {
+                        StatusTextBlock.Text = $"{database.Name}: {message}";
+                    });
+                    
+                    string containerId = await _dockerService.StartDatabaseContainer(database, progress);
                     database.ContainerId = containerId;
                     database.Status = "Running";
                 }
@@ -252,10 +281,12 @@ namespace DatabaseDock
                 // Save updated database information
                 await _settingsService.SaveDatabasesAsync(_databases.ToList());
                 StatusTextBlock.Text = "All databases started successfully";
+                _dockerService.LoggingService.LogInfo("All databases started successfully");
             }
             catch (Exception ex)
             {
                 StatusTextBlock.Text = $"Error starting databases: {ex.Message}";
+                _dockerService.LoggingService.LogError($"Error starting databases: {ex.Message}");
                 MessageBox.Show($"Error starting databases: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -265,21 +296,24 @@ namespace DatabaseDock
             try
             {
                 StatusTextBlock.Text = "Stopping all databases...";
+                _dockerService.LoggingService.LogInfo("Stopping all databases");
 
                 foreach (var database in _databases.Where(d => d.Status.ToLower() == "running" && !string.IsNullOrEmpty(d.ContainerId)))
                 {
                     database.Status = "Stopping";
-                    await _dockerService.StopDatabaseContainer(database.ContainerId);
+                    await _dockerService.StopDatabaseContainer(database.ContainerId, database.Name);
                     database.Status = "Stopped";
                 }
 
                 // Save updated database information
                 await _settingsService.SaveDatabasesAsync(_databases.ToList());
                 StatusTextBlock.Text = "All databases stopped successfully";
+                _dockerService.LoggingService.LogInfo("All databases stopped successfully");
             }
             catch (Exception ex)
             {
                 StatusTextBlock.Text = $"Error stopping databases: {ex.Message}";
+                _dockerService.LoggingService.LogError($"Error stopping databases: {ex.Message}");
                 MessageBox.Show($"Error stopping databases: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -287,7 +321,26 @@ namespace DatabaseDock
         private void ExitApplication_Click(object sender, RoutedEventArgs e)
         {
             _isClosing = true;
+            
+            // Stop all log streams
+            _dockerService.LoggingService.StopAllLogStreams();
+            _dockerService.LoggingService.LogInfo("Application exiting");
+            
             Close();
+        }
+        
+        private void ViewLogs_Click(object sender, RoutedEventArgs e)
+        {
+            if (_logWindow == null || !_logWindow.IsVisible)
+            {
+                _logWindow = new LogWindow(_dockerService.LoggingService);
+                _logWindow.Owner = this;
+                _logWindow.Show();
+            }
+            else
+            {
+                _logWindow.Activate();
+            }
         }
     }
 }

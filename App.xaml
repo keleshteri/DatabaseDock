@@ -1,9 +1,19 @@
-﻿<Application x:Class="DatabaseDock.App"
+<Application x:Class="DatabaseDock.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:DatabaseDock"
+             xmlns:converters="clr-namespace:DatabaseDock.Converters"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <!-- Application Resources -->
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Converters -->
+            <converters:LogTypeToColorConverter x:Key="LogTypeToColorConverter"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

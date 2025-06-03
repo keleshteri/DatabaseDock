@@ -98,6 +98,7 @@
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Content="Refresh" Width="80" Margin="0,0,5,0" Click="RefreshStatus_Click"/>
+                    <Button Content="View Logs" Width="80" Margin="5,0,5,0" Click="ViewLogs_Click"/>
                     <Button Content="Add Database" Width="100" Margin="5,0,0,0" Click="AddDatabase_Click"/>
                 </StackPanel>
             </Grid>

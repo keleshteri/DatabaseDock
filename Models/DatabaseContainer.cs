@@ -8,17 +8,19 @@ namespace DatabaseDock.Models
 {
     public class DatabaseContainer : INotifyPropertyChanged
     {
-        private string _name;
-        private string _version;
-        private string _status;
-        private string _containerId;
-        private string _iconPath;
-        private string _volumePath;
+        private string _name = string.Empty;
+        private string _version = string.Empty;
+        private string _status = string.Empty;
+        private string _containerId = string.Empty;
+        private string _iconPath = string.Empty;
+        private string _volumePath = string.Empty;
         private int _port;
-        private string _connectionString;
-        private string _actionButtonText;
+        private string _connectionString = string.Empty;
+        private string _actionButtonText = string.Empty;
         private SolidColorBrush? _statusColor;
         private string _statusColorHex = "#808080"; // Default gray
+        private string _password = string.Empty;
+        private string _type = string.Empty;
 
         public string Name
         {
@@ -131,17 +133,31 @@ namespace DatabaseDock.Models
             set => SetProperty(ref _statusColorHex, value);
         }
 
+        public string Password
+        {
+            get => _password;
+            set => SetProperty(ref _password, value);
+        }
+
+        public string Type
+        {
+            get => _type;
+            set => SetProperty(ref _type, value);
+        }
+
         // Default values for different database types
         public static DatabaseContainer CreateMySql()
         {
             return new DatabaseContainer
             {
                 Name = "MySQL",
+                Type = "mysql",
                 Version = "8.0",
                 Status = "Stopped",
                 IconPath = "/Resources/Icons/mysql_icon.png",
                 Port = 3306,
                 VolumePath = "D:\\DockerVolumes\\mysql",
+                Password = "12345678",
                 ConnectionString = "Server=localhost;Port=3306;Database=mysql;User=root;Password=12345678;"
             };
         }
@@ -151,11 +167,13 @@ namespace DatabaseDock.Models
             return new DatabaseContainer
             {
                 Name = "MSSQL",
+                Type = "mssql",
                 Version = "2022",
                 Status = "Stopped",
                 IconPath = "/Resources/Icons/mssql_icon.png",
                 Port = 1433,
                 VolumePath = "D:\\DockerVolumes\\mssql",
+                Password = "P@ssw0rd",
                 ConnectionString = "Server=localhost,1433;Database=master;User Id=sa;Password=P@ssw0rd;TrustServerCertificate=True;"
             };
         }
@@ -165,11 +183,13 @@ namespace DatabaseDock.Models
             return new DatabaseContainer
             {
                 Name = "PostgreSQL",
+                Type = "postgresql",
                 Version = "15",
                 Status = "Stopped",
                 IconPath = "/Resources/Icons/postgres_icon.png",
                 Port = 5432,
                 VolumePath = "D:\\DockerVolumes\\postgres",
+                Password = "postgres",
                 ConnectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=postgres;"
             };
         }
@@ -179,11 +199,13 @@ namespace DatabaseDock.Models
             return new DatabaseContainer
             {
                 Name = "Redis",
+                Type = "redis",
                 Version = "7.0",
                 Status = "Stopped",
                 IconPath = "/Resources/Icons/redis_icon.png",
                 Port = 6379,
                 VolumePath = "D:\\DockerVolumes\\redis",
+                Password = "",
                 ConnectionString = "localhost:6379"
             };
         }
