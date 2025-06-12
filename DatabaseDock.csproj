@@ -15,6 +15,9 @@
     <None Remove="Resources\Icons\mysql_icon.png" />
     <None Remove="Resources\Icons\postgres_icon.png" />
     <None Remove="Resources\Icons\redis_icon.png" />
+    <None Remove="Resources\Icons\weaviate_icon.png" />
+    <None Remove="Resources\Icons\pinecone_icon.png" />
+    <None Remove="Resources\Icons\qdrant_icon.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +36,9 @@
     <Resource Include="Resources\Icons\mysql_icon.png" />
     <Resource Include="Resources\Icons\postgres_icon.png" />
     <Resource Include="Resources\Icons\redis_icon.png" />
+    <Resource Include="Resources\Icons\weaviate_icon.png" />
+    <Resource Include="Resources\Icons\pinecone_icon.png" />
+    <Resource Include="Resources\Icons\qdrant_icon.png" />
   </ItemGroup>
 
   <ItemGroup>
